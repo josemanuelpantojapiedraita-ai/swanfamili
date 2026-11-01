@@ -168,9 +168,10 @@
   <div class="admin-ventana admin-login-ventana">
     <button class="admin-cerrar" type="button" onclick="cerrarAdmin()">×</button>
     <h2>Acceso SWAN</h2>
-    <p>Introduce tu contraseña para entrar.</p>
+    <p>Inicia sesión con tu cuenta autorizada de FAMILY SWAN.</p>
     <form onsubmit="comprobarCodigoAdmin(event)">
-      <input id="codigoAdmin" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+      <input id="correoAdmin" type="email" placeholder="Correo electrónico" autocomplete="username" required>
+      <input id="codigoAdmin" type="password" placeholder="Contraseña" autocomplete="current-password" required>
       <p id="errorAdmin" class="admin-error"></p>
       <button class="admin-accion" type="submit">Entrar</button>
     </form>
@@ -436,6 +437,9 @@
 </div>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="script.js"></script>
 
 </body>
