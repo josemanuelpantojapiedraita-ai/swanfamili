@@ -1,0 +1,17 @@
+REGLAS TEMPORALES DE FIRESTORE — FASE 1 (SOLO CREADOR)
+
+Estas reglas permiten leer y escribir los documentos de FAMILY SWAN únicamente a la cuenta creadora autenticada.
+No habilites acceso público. Los administradores se configurarán en una siguiente fase mediante roles guardados en Firestore.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function esCreador() {
+      return request.auth != null
+        && request.auth.uid == "yrCtVpgbFYecc6ZlO5WkG3TpTNu2";
+    }
+    match /{documento=**} {
+      allow read, write: if esCreador();
+    }
+  }
+}

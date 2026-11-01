@@ -1,0 +1,16 @@
+FAMILY SWAN — PRIMERA CONEXIÓN CON FIREBASE
+
+1. Esta versión usa Firebase Authentication y Cloud Firestore.
+2. El botón del oso ahora solicita correo y contraseña de Firebase.
+3. Por ahora, solo el UID del creador configurado puede iniciar sesión en modo edición y sincronizar integrantes y eventos.
+4. La primera vez que el creador inicia sesión, los datos locales existentes se copian a Firestore si todavía no existen documentos en la nube. Si ya existen, la nube se considera la versión principal.
+5. Los cambios de integrantes y eventos se sincronizan en tiempo real entre sesiones del creador.
+6. La galería y sus fotos permanecen locales en esta fase. Se conectarán mediante Firebase Storage en una fase posterior para evitar superar el límite de tamaño de documentos de Firestore.
+7. Los administradores aún no están habilitados para iniciar sesión con Firebase. No agregues administradores desde el panel local antiguo hasta que configuremos roles y reglas seguras.
+
+IMPORTANTE:
+- Conserva una copia de seguridad de la versión anterior.
+- No compartas la contraseña del creador.
+- No publiques claves privadas ni contraseñas. La firebaseConfig incluida es la configuración web pública de Firebase; la seguridad real depende de Authentication y las reglas de Firestore.
+- Si la página muestra un error de permisos, verifica que las reglas de Firestore coincidan con REGLAS_FIRESTORE.txt y que la cuenta autenticada tenga el UID indicado.
+- Los SDK de Firebase se cargan desde gstatic.com, por lo que se necesita conexión a internet.
