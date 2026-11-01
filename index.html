@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAMILY SWAN</title>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<!-- INTRO: LIBRO DE LOS SWAN -->
+<div class="intro-libro" id="introLibro">
+
+    <button class="osito-admin" type="button" onclick="abrirAccesoAdmin(event)" aria-label="Acceso de administración">
+        <img src="osito-admin.png" alt="">
+    </button>
+
+    <button class="libro-portada" type="button"
+        onclick="abrirLibro()"
+        aria-label="Abrir el libro LOS SWAN">
+
+        <span class="ornamento">✧ ❦ ✧</span>
+
+        <h1>LOS SWAN</h1>
+
+        <p>EL COMIENZO DE NUESTRA HISTORIA</p>
+
+        <span class="instruccion">
+            Presiona para abrir el libro
+        </span>
+
+    </button>
+
+    <section class="libro-interior">
+
+        <div class="libro-hojas">
+
+            <!-- PAGINA 1 -->
+
+            <article class="pagina-libro activa">
+
+                <div class="sello">✧ ❦ ✧</div>
+
+                <h2>El comienzo</h2>
+
+                <p>
+                    Hace unos cinco meses, Jan, Nat y una tercera
+                    persona formaban parte de una misma familia.
+                    Aunque se consideraban hermanas, los problemas
+                    y desacuerdos hicieron que decidieran tomar
+                    otro camino y marcharse.
+                </p>
+
+                <p>
+                    Durante unas semanas quedaron solo ellas tres.
+                    En ese tiempo nació una idea: crear una familia
+                    propia, un lugar que pudieran construir juntas
+                    y al que otras personas también pudieran pertenecer.
+                </p>
+
+                <div class="numero-pagina">— 1 —</div>
+
+            </article>
+
+
+            <!-- PAGINA 2 -->
+
+            <article class="pagina-libro">
+
+                <div class="sello">✧ ❦ ✧</div>
+
+                <h2>El nombre y el lobo</h2>
+
+                <p>
+                    Al principio, la familia utilizó el apellido
+                    <strong>Ivanov</strong>, pero más adelante
+                    decidió buscar una identidad nueva.
+                    Así nació el nombre <strong>SWAN</strong>,
+                    inspirado en la saga <em>Crepúsculo</em>.
+                </p>
+
+                <p>
+                    De esa misma historia viene nuestro símbolo:
+                    el lobo, inspirado en Jacob. Por eso el lobo
+                    representa a los SWAN y está presente en todo
+                    lo que identifica a nuestra familia.
+                </p>
+
+                <div class="numero-pagina">— 2 —</div>
+
+            </article>
+
+
+            <!-- PAGINA 3 -->
+
+            <article class="pagina-libro">
+
+                <div class="sello">✧ ❦ ✧</div>
+
+                <h2>Una familia para todos</h2>
+
+                <p>
+                    Los SWAN se formaron con una razón muy importante:
+                    que nadie tenga que sentirse excluido.
+                    Queríamos crear un lugar donde cada persona
+                    pudiera ser recibida, encontrar su espacio
+                    y sentirse parte de algo.
+                </p>
+
+                <p>
+                    Lo que comenzó con tres personas sigue creciendo
+                    con cada integrante, cada recuerdo y cada nueva
+                    historia. Porque ser SWAN no es solo llevar un
+                    nombre: es pertenecer a una familia que siempre
+                    deja espacio para alguien más.
+                </p>
+
+                <div class="numero-pagina">— 3 —</div>
+
+            </article>
+
+        </div>
+
+
+        <!-- BOTONES PARA MOVER LAS PAGINAS -->
+
+        <div class="controles-libro">
+
+            <button class="control-pagina"
+                id="paginaAnterior"
+                type="button"
+                onclick="moverPagina(-1)"
+                disabled>
+                ❮ Anterior
+            </button>
+
+            <span id="contadorPaginas">
+                Página 1 de 3
+            </span>
+
+            <button class="control-pagina"
+                id="paginaSiguiente"
+                type="button"
+                onclick="moverPagina(1)">
+                Siguiente ❯
+            </button>
+
+        </div>
+
+        <div style="text-align:center;">
+
+            <button class="boton-descubrir"
+                type="button"
+                onclick="entrarFamilia()">
+                Descubrir
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- ACCESO Y PANEL DE ADMINISTRADOR -->
+<div class="admin-capa" id="adminLogin" style="display:none;" onclick="cerrarAdminFondo(event)">
+  <div class="admin-ventana admin-login-ventana">
+    <button class="admin-cerrar" type="button" onclick="cerrarAdmin()">×</button>
+    <h2>Acceso SWAN</h2>
+    <p>Introduce tu contraseña para entrar.</p>
+    <form onsubmit="comprobarCodigoAdmin(event)">
+      <input id="codigoAdmin" type="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+      <p id="errorAdmin" class="admin-error"></p>
+      <button class="admin-accion" type="submit">Entrar</button>
+    </form>
+  </div>
+</div>
+
+<!-- =========================
+     PORTADA
+========================= -->
+
+<header class="portada">
+
+    <button class="campanita-notificaciones" id="campanitaNotificaciones" type="button" onclick="activarNotificaciones()" aria-label="Activar notificaciones" title="Activar notificaciones">
+        <span aria-hidden="true">🔔</span><i id="estadoCampanita" aria-hidden="true"></i>
+    </button>
+    <div class="saludo-acceso" id="saludoAcceso" aria-live="polite" hidden></div>
+
+    <img
+        src="./foto-familia.jpg"
+        class="foto-principal"
+        alt="Nuestra familia"
+    >
+
+    <div class="perfil">
+
+        <div class="logo-contenedor">
+
+            <img
+                src="./logo-swan.png"
+                class="logo"
+                alt="Logo SWAN"
+                onerror="
+                    this.style.display='none';
+                    this.nextElementSibling.style.display='flex';
+                "
+            >
+
+            <div class="logo-fallback">SWAN</div>
+
+        </div>
+
+        <div class="nombre">
+            <h1>FAMILY SWAN</h1>
+            <p>OUR FAMILY · OUR STORY</p>
+        </div>
+
+    </div>
+
+</header>
+
+<!-- FRASE -->
+
+<section class="frase">
+    "La familia es donde comienza nuestra historia
+    y donde el amor nunca termina."
+</section>
+
+<!-- =========================
+     CALENDARIO
+========================= -->
+
+<section class="calendario-seccion">
+
+    <h2 class="titulo-seccion">Calendario de eventos</h2>
+
+    <div class="mes-navegacion">
+
+        <button class="flecha" onclick="cambiarMes(-1)">❮</button>
+
+        <h3 id="mesActual"></h3>
+
+        <button class="flecha" onclick="cambiarMes(1)">❯</button>
+
+    </div>
+
+    <div class="dias-semana">
+        <div>Dom</div>
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mié</div>
+        <div>Jue</div>
+        <div>Vie</div>
+        <div>Sáb</div>
+    </div>
+
+    <div class="dias" id="diasCalendario"></div>
+
+    <div class="referencias">
+        <span><i class="punto cumple"></i> Cumpleaños</span>
+        <span><i class="punto reunion"></i> Reuniones y fechas importantes</span>
+    </div>
+
+    <div class="eventos">
+        <h3 id="tituloEventos">Eventos del mes</h3>
+        <div id="listaEventos">
+            Selecciona una fecha para ver sus acontecimientos.
+        </div>
+    </div>
+
+    <div class="admin-eventos" id="controlesEventos" hidden>
+        <h3>Administrar fechas importantes</h3>
+        <form id="formEventoAdmin" class="admin-formulario" onsubmit="guardarEventoAdmin(event)">
+            <label>Fecha<input id="eventoFecha" type="date" required></label>
+            <label>Nombre del evento<input id="eventoNombre" placeholder="Ej. Reunión familiar" required></label>
+            <label>Tipo<select id="eventoTipo"><option value="reunion">Reunión</option><option value="importante">Fecha importante</option></select></label>
+            <label>Color del evento<input id="eventoColor" type="color" value="#b58a62"></label>
+            <label>Descripción<textarea id="eventoDescripcion" rows="3" placeholder="Explica de qué se trata la reunión o fecha importante." required></textarea></label>
+            <button class="admin-accion" type="submit">＋ Guardar fecha</button>
+        </form>
+        <div id="listaAdminEventos" class="lista-admin-eventos"></div>
+        <p class="admin-ayuda">Las fechas se guardan en este navegador y aparecerán en el calendario.</p>
+    </div>
+
+</section>
+
+<!-- =========================
+     NUESTRA FAMILIA
+========================= -->
+
+<section class="integrantes-seccion">
+
+    <h2 class="titulo-seccion">Nuestra familia</h2>
+
+    <p class="subtitulo">
+        Conoce a las personas que forman parte de nuestra historia.
+    </p>
+
+    <div class="integrantes-grid" id="integrantesGrid"></div>
+
+    <div class="admin-controles-seccion" id="controlesIntegrantes" hidden>
+        <button class="admin-accion" type="button" onclick="mostrarEditorIntegrantes()">✎ Editar integrantes</button>
+        <button class="admin-secundario" type="button" onclick="cerrarModoAdmin()">Salir del modo administrador</button>
+    </div>
+
+    <div class="panel-creador" id="panelCreador" hidden>
+        <h3>Panel del creador · Administrar administradores</h3>
+        <p class="admin-ayuda">Puedes tener hasta 5 administradores, cada uno con su propia contraseña.</p>
+        <form id="formAdminCreador" class="admin-formulario" onsubmit="guardarAdministrador(event)">
+            <label>Nombre del administrador<input id="nuevoAdminNombre" required maxlength="40" placeholder="Ej. Ana"></label>
+            <label>Contraseña<input id="nuevoAdminClave" type="password" required minlength="4" maxlength="80" placeholder="Mínimo 4 caracteres"></label>
+            <button class="admin-accion" type="submit">＋ Agregar administrador</button>
+        </form>
+        <div id="listaAdministradores" class="lista-admin-eventos"></div>
+        <form id="formClaveCreador" class="admin-formulario" onsubmit="cambiarClaveCreador(event)">
+            <h4>Cambiar mi contraseña de creador</h4>
+            <label>Nueva contraseña<input id="nuevaClaveCreador" type="password" minlength="4" maxlength="80" required></label>
+            <button class="admin-secundario" type="submit">Cambiar contraseña</button>
+        </form>
+    </div>
+
+    <div class="editor-integrantes" id="editorIntegrantes" hidden>
+        <h3>Administrar integrantes</h3>
+        <div class="admin-panel-grid">
+            <div class="admin-lista" id="adminListaIntegrantes"></div>
+            <form id="formIntegranteAdmin" class="admin-formulario" onsubmit="guardarIntegranteAdmin(event)">
+                <h3 id="adminFormularioTitulo">Agregar integrante</h3>
+                <input type="hidden" id="adminIndice">
+                <label>Nombre<input id="adminNombre" required></label>
+                <label>Relación<input id="adminRelacion" placeholder="Ej. Hija de Jan"></label>
+                <label>Descripción<textarea id="adminDescripcion" rows="2"></textarea></label>
+                <label>Edad<input id="adminEdad"></label>
+                <label>Padres o pareja<input id="adminPadres" placeholder="Ej. Jan, Kiari y Angel o Pareja de Jan"></label>
+                <label>Usuario de Roblox<input id="adminRoblox"></label>
+                <label>Cumpleaños<input id="adminCumple"></label>
+                <label>Color favorito<input id="adminColor"></label>
+                <label>Animal favorito<input id="adminAnimal"></label>
+                <label>Foto (nombre del archivo)<input id="adminFoto" placeholder="ejemplo.jpg"></label>
+                <div class="admin-form-botones">
+                    <button class="admin-accion" type="submit">Guardar integrante</button>
+                    <button class="admin-secundario" type="button" onclick="limpiarFormularioAdmin()">Nuevo integrante</button>
+                </div>
+                <p class="admin-ayuda">Los cambios se guardan en este navegador. Para fotos de perfil, coloca el archivo junto a index.html y escribe su nombre aquí.</p>
+            </form>
+        </div>
+    </div>
+
+</section>
+
+<!-- =========================
+     ARBOL INTERACTIVO
+========================= -->
+
+<section class="arbol-seccion">
+
+    <h2 class="titulo-seccion">Nuestro árbol genealógico</h2>
+
+    <p class="subtitulo">
+        Nuestras raíces, generaciones y nuevas historias.
+    </p>
+
+    <div class="arbol-contenedor">
+
+        <div id="arbolGenealogico"
+             class="arbol-interactivo"></div>
+
+    </div>
+
+    <p class="subtitulo" style="margin:15px 0 0;">
+        ♡ Presiona sobre cada familiar para descubrir su descendencia.
+    </p>
+
+</section>
+
+<!-- =========================
+     GALERIA
+========================= -->
+
+<section class="galeria-seccion">
+
+    <h2 class="titulo-seccion">Nuestros recuerdos</h2>
+
+    <p class="subtitulo">
+        Cada fotografía guarda un pedacito de nuestra historia.
+    </p>
+
+    <div class="galeria-grid" id="galeriaGrid"></div>
+
+    <div class="admin-galeria" id="controlesGaleria" hidden>
+        <h3>Administrar recuerdos</h3>
+        <label class="subir-recuerdos">＋ Agregar imágenes
+            <input id="subirImagenesGaleria" type="file" accept="image/*" multiple onchange="agregarImagenesGaleria(event)">
+        </label>
+        <p class="admin-ayuda">Puedes seleccionar varias imágenes. Se guardarán en este navegador. En cada foto aparecerá un botón para eliminarla.</p>
+    </div>
+
+</section>
+
+<footer>
+    FAMILY SWAN · Hecho con amor para nuestra familia 🤎
+</footer>
+
+<!-- MODAL INTEGRANTE -->
+
+<div class="modal" id="modalIntegrante"
+     onclick="cerrarModalFondo(event)">
+
+    <div class="modal-contenido">
+
+        <button class="cerrar" onclick="cerrarModales()">×</button>
+
+        <h2 id="modalNombre"></h2>
+
+        <p id="modalRelacion"></p>
+
+        <br>
+
+        <p id="modalDescripcion"></p>
+
+    </div>
+
+</div>
+
+<!-- MODAL FOTOGRAFIA -->
+
+<div class="modal" id="modalFoto" onclick="cerrarModales()">
+
+    <div class="modal-foto">
+        <img id="imagenAmpliada"
+             class="modal-imagen"
+             alt="Recuerdo familiar">
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
