@@ -74,7 +74,7 @@ const firebaseConfig = {
   messagingSenderId: "61424439986",
   appId: "1:61424439986:web:bab5cea43097e9e936efab"
 };
-const UID_CREADOR_SWAN = "yrCtVpgbFYecc6ZlO5WkG3TpTNu2";
+const UID_CREADOR_SWAN = "Nvaojypv4QOSvd9TK37dBq9UF6x2";
 let authSWAN = null;
 let dbSWAN = null;
 let usuarioFirebaseSWAN = null;
