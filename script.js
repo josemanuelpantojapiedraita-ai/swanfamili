@@ -64,6 +64,81 @@ function entrarFamilia() {
 
 
 /* ===================================
+   FIREBASE · SINCRONIZACIÓN SWAN
+=================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDFZMxB9rI08hmwEPU8-1CncfwXesOBXTQ",
+  authDomain: "family-swan.firebaseapp.com",
+  projectId: "family-swan",
+  storageBucket: "family-swan.firebasestorage.app",
+  messagingSenderId: "61424439986",
+  appId: "1:61424439986:web:bab5cea43097e9e936efab"
+};
+const UID_CREADOR_SWAN = "yrCtVpgbFYecc6ZlO5WkG3TpTNu2";
+let authSWAN = null;
+let dbSWAN = null;
+let usuarioFirebaseSWAN = null;
+let sincronizacionActivaSWAN = false;
+let temporizadoresGuardadoSWAN = {};
+let suscripcionesSWAN = [];
+try {
+  if (window.firebase && !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  if (window.firebase) { authSWAN = firebase.auth(); dbSWAN = firebase.firestore(); }
+} catch (error) { console.error("No se pudo iniciar Firebase:", error); }
+function programarGuardadoNubeSWAN(tipo, datos) {
+  if (!sincronizacionActivaSWAN || !dbSWAN || !usuarioFirebaseSWAN || usuarioFirebaseSWAN.uid !== UID_CREADOR_SWAN) return;
+  clearTimeout(temporizadoresGuardadoSWAN[tipo]);
+  temporizadoresGuardadoSWAN[tipo] = setTimeout(async () => {
+    try {
+      await dbSWAN.collection("familySwan").doc(tipo).set({ datos, actualizado: firebase.firestore.FieldValue.serverTimestamp() });
+    } catch (error) {
+      console.error("Error al sincronizar " + tipo, error);
+      alert("No se pudo sincronizar con la nube. Revisa tu conexión y las reglas de Firestore.");
+    }
+  }, 500);
+}
+async function cargarDatosNubeSWAN() {
+  if (!dbSWAN || !usuarioFirebaseSWAN || usuarioFirebaseSWAN.uid !== UID_CREADOR_SWAN) return;
+  sincronizacionActivaSWAN = false;
+  try {
+    // Las fotos se dejan localmente en esta primera fase; se migrarán a Firebase Storage después.
+    const tipos = ["integrantes", "eventos"];
+    const resultados = await Promise.all(tipos.map(tipo => dbSWAN.collection("familySwan").doc(tipo).get()));
+    const datosLocales = {
+      integrantes: JSON.parse(localStorage.getItem("familySwanIntegrantes_v1") || "null"),
+      eventos: JSON.parse(localStorage.getItem("familySwanEventos_v1") || "null"),
+    };
+    for (let i=0; i<tipos.length; i++) {
+      const tipo=tipos[i], doc=resultados[i];
+      if (doc.exists && doc.data() && doc.data().datos !== undefined) {
+        const valor=doc.data().datos;
+        if (tipo === "integrantes" && Array.isArray(valor)) integrantes=valor;
+        if (tipo === "eventos" && valor && typeof valor === "object") eventos=valor;
+        localStorage.setItem(tipo === "integrantes" ? "familySwanIntegrantes_v1" : "familySwanEventos_v1", JSON.stringify(valor));
+      } else if (datosLocales[tipo] !== null) {
+        await dbSWAN.collection("familySwan").doc(tipo).set({datos: datosLocales[tipo], actualizado: firebase.firestore.FieldValue.serverTimestamp()});
+      } else {
+        const inicial = tipo === "integrantes" ? integrantes : eventos;
+        await dbSWAN.collection("familySwan").doc(tipo).set({datos: inicial, actualizado: firebase.firestore.FieldValue.serverTimestamp()});
+      }
+    }
+    integrantes.forEach(persona => { const r=relacionesInicialesSWAN[persona.nombre]; if(r){if(!persona.padres)persona.padres=r.padres||"";if(!persona.pareja)persona.pareja=r.pareja||"";} });
+    cargarIntegrantes(); cargarArbol(); cargarGaleria(); mostrarCalendario(); cargarListaAdminEventos();
+    sincronizacionActivaSWAN = true;
+    suscripcionesSWAN.forEach(unsub=>unsub()); suscripcionesSWAN=[];
+    ["integrantes","eventos"].forEach(tipo=>{
+      const unsub=dbSWAN.collection("familySwan").doc(tipo).onSnapshot(snapshot=>{
+        if(!snapshot.exists || !snapshot.data())return;
+        const valor=snapshot.data().datos;
+        if(tipo==="integrantes" && Array.isArray(valor)){integrantes=valor;localStorage.setItem("familySwanIntegrantes_v1",JSON.stringify(valor));cargarIntegrantes();cargarArbol();}
+        if(tipo==="eventos" && valor && typeof valor==="object"){eventos=valor;localStorage.setItem("familySwanEventos_v1",JSON.stringify(valor));mostrarCalendario();}
+      }, error=>console.error("Error escuchando cambios de " + tipo,error));
+      suscripcionesSWAN.push(unsub);
+    });
+  } catch(error) { console.error("Error cargando datos de FAMILY SWAN:",error); alert("No se pudieron cargar los datos compartidos. Comprueba que las reglas de Firestore estén publicadas."); }
+}
+
+/* ===================================
    CALENDARIO
 =================================== */
 
@@ -76,7 +151,7 @@ let eventos = {};
 try { eventos = JSON.parse(localStorage.getItem(STORAGE_EVENTOS_SWAN) || "{}"); } catch (error) { eventos = {}; }
 
 function guardarEventos() {
-    try { localStorage.setItem(STORAGE_EVENTOS_SWAN, JSON.stringify(eventos)); }
+    try { localStorage.setItem(STORAGE_EVENTOS_SWAN, JSON.stringify(eventos)); programarGuardadoNubeSWAN("eventos", eventos); }
     catch (error) { alert("No se pudieron guardar los eventos en este navegador."); }
 }
 function fechaClaveLocal(fechaObj) {
@@ -493,6 +568,7 @@ integrantes.forEach(persona => {
 function guardarIntegrantesEnNavegador() {
     try {
         localStorage.setItem(STORAGE_INTEGRANTES_SWAN, JSON.stringify(integrantes));
+        programarGuardadoNubeSWAN("integrantes", integrantes);
     } catch (error) {
         alert("No se pudieron guardar los cambios en este navegador.");
     }
@@ -901,7 +977,7 @@ try {
 } catch (error) { console.warn("No se pudo cargar la galería guardada.", error); }
 
 function guardarGaleria() {
-    try { localStorage.setItem(STORAGE_GALERIA_SWAN, JSON.stringify(fotografias)); }
+    try { localStorage.setItem(STORAGE_GALERIA_SWAN, JSON.stringify(fotografias)); programarGuardadoNubeSWAN("galeria", fotografias); }
     catch (error) { alert("El almacenamiento del navegador está lleno. Prueba con imágenes más pequeñas."); }
 }
 
@@ -1008,42 +1084,42 @@ function abrirAccesoAdmin(event) {
     if (event) event.stopPropagation();
     document.getElementById("adminLogin").style.display = "flex";
     document.getElementById("codigoAdmin").value = "";
+    document.getElementById("correoAdmin").value = "";
     document.getElementById("errorAdmin").textContent = "";
-    setTimeout(() => document.getElementById("codigoAdmin").focus(), 50);
+    setTimeout(() => document.getElementById("correoAdmin").focus(), 50);
 }
 
-function comprobarCodigoAdmin(event) {
+async function comprobarCodigoAdmin(event) {
     event.preventDefault();
+    const correo = document.getElementById("correoAdmin").value.trim();
     const clave = document.getElementById("codigoAdmin").value;
-    let rol = "";
-    let nombreAcceso = "";
-    if (clave === rolesSWAN.creador) { rol = "creador"; }
-    else {
-        const administrador = rolesSWAN.administradores.find(admin => admin.clave === clave);
-        if (administrador) { rol = "admin"; nombreAcceso = administrador.nombre; }
+    const errorEl = document.getElementById("errorAdmin");
+    if (!authSWAN || !dbSWAN) { errorEl.textContent = "Firebase no está disponible. Recarga la página e inténtalo de nuevo."; return; }
+    try {
+        const credencial = await authSWAN.signInWithEmailAndPassword(correo, clave);
+        usuarioFirebaseSWAN = credencial.user;
+        if (usuarioFirebaseSWAN.uid !== UID_CREADOR_SWAN) {
+            await authSWAN.signOut(); usuarioFirebaseSWAN = null;
+            errorEl.textContent = "Esta cuenta todavía no tiene permisos asignados en FAMILY SWAN.";
+            return;
+        }
+        modoAdministrador = true;
+        rolActualSWAN = "creador";
+        document.getElementById("adminLogin").style.display = "none";
+        entrarFamilia();
+        document.getElementById("controlesIntegrantes").hidden = false;
+        document.getElementById("controlesGaleria").hidden = false;
+        document.getElementById("controlesEventos").hidden = false;
+        document.getElementById("panelCreador").hidden = false;
+        const saludo=document.getElementById("saludoAcceso");
+        saludo.textContent = "BIENVENIDO, CREADOR"; saludo.hidden=false; saludo.classList.add("saludo-creador");
+        await cargarDatosNubeSWAN();
+        cargarListaAdministradores(); cargarListaAdminEventos(); cargarGaleria();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+        console.error(error);
+        errorEl.textContent = error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" ? "Correo o contraseña incorrectos." : "No se pudo iniciar sesión. Revisa los datos e inténtalo de nuevo.";
     }
-    if (!rol) {
-        document.getElementById("errorAdmin").textContent = "Contraseña incorrecta. Inténtalo de nuevo.";
-        document.getElementById("codigoAdmin").value = "";
-        document.getElementById("codigoAdmin").focus();
-        return;
-    }
-    modoAdministrador = true;
-    rolActualSWAN = rol;
-    document.getElementById("adminLogin").style.display = "none";
-    entrarFamilia();
-    document.getElementById("controlesIntegrantes").hidden = false;
-    document.getElementById("controlesGaleria").hidden = false;
-    document.getElementById("controlesEventos").hidden = false;
-    document.getElementById("panelCreador").hidden = rol !== "creador";
-    const saludo=document.getElementById("saludoAcceso");
-    saludo.textContent = rol === "creador" ? "BIENVENIDO, CREADOR" : "HOLA, " + nombreAcceso.toLocaleUpperCase("es");
-    saludo.hidden=false;
-    saludo.classList.toggle("saludo-creador", rol === "creador");
-    if (rol === "creador") cargarListaAdministradores();
-    cargarListaAdminEventos();
-    cargarGaleria();
-    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function cerrarAdmin() { document.getElementById("adminLogin").style.display = "none"; }
@@ -1113,6 +1189,8 @@ function cerrarModoAdmin() {
     document.getElementById("panelCreador").hidden = true;
     document.getElementById("editorIntegrantes").hidden = true;
     rolActualSWAN = "";
+    sincronizacionActivaSWAN = false;
+    if (authSWAN && usuarioFirebaseSWAN) { authSWAN.signOut().catch(console.error); usuarioFirebaseSWAN = null; }
     cargarGaleria();
     cargarIntegrantes();
     cargarArbol();
